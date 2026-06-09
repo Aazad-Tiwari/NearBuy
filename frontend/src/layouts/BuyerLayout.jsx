@@ -16,6 +16,7 @@ function LocationDropdown({ userLocation, setUserLocation }) {
   const [manualLat, setManualLat] = useState('');
   const [manualLng, setManualLng] = useState('');
   const [manualError, setManualError] = useState('');
+  const [geocoding, setGeocoding] = useState(false);
 
   const ref = useRef(null);
 
@@ -32,6 +33,27 @@ function LocationDropdown({ userLocation, setUserLocation }) {
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
+
+  const handleGeocode = async (name) => {
+    if (!name || !name.trim()) return;
+    setGeocoding(true);
+    setManualError('');
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(name.trim())}&limit=1`);
+      const data = await response.json();
+      if (data && data.length > 0) {
+        setManualLat(parseFloat(data[0].lat).toFixed(6));
+        setManualLng(parseFloat(data[0].lon).toFixed(6));
+      } else {
+        setManualError('Could not find coordinates for this location name.');
+      }
+    } catch (err) {
+      console.error('[geocode]', err);
+      setManualError('Failed to fetch coordinates automatically.');
+    } finally {
+      setGeocoding(false);
+    }
+  };
 
   const handleUseGPS = () => {
     if (!navigator.geolocation) {
@@ -60,15 +82,42 @@ function LocationDropdown({ userLocation, setUserLocation }) {
     );
   };
 
-  const handleSaveManual = (e) => {
+  const handleSaveManual = async (e) => {
     e.preventDefault();
-    const latNum = parseFloat(manualLat);
-    const lngNum = parseFloat(manualLng);
-
     if (!manualName.trim()) {
       setManualError('Location name is required.');
       return;
     }
+
+    let latNum = parseFloat(manualLat);
+    let lngNum = parseFloat(manualLng);
+
+    // If coordinates are missing, auto-geocode first
+    if (isNaN(latNum) || isNaN(lngNum)) {
+      setGeocoding(true);
+      setManualError('');
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(manualName.trim())}&limit=1`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          latNum = parseFloat(data[0].lat);
+          lngNum = parseFloat(data[0].lon);
+          setManualLat(latNum.toFixed(6));
+          setManualLng(lngNum.toFixed(6));
+        } else {
+          setManualError('Could not find coordinates for this location name. Please enter manually.');
+          setGeocoding(false);
+          return;
+        }
+      } catch (err) {
+        console.error('[geocode]', err);
+        setManualError('Failed to fetch coordinates. Please enter manually.');
+        setGeocoding(false);
+        return;
+      }
+      setGeocoding(false);
+    }
+
     if (isNaN(latNum) || latNum < -90 || latNum > 90) {
       setManualError('Latitude must be a number between -90 and 90.');
       return;
@@ -162,13 +211,29 @@ function LocationDropdown({ userLocation, setUserLocation }) {
               <div className="space-y-2">
                 <div>
                   <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Location Name</label>
-                  <input
-                    type="text"
-                    value={manualName}
-                    onChange={(e) => { setManualName(e.target.value); setManualError(''); }}
-                    placeholder="e.g. Indiranagar, Bangalore"
-                    className="w-full text-xs px-3 py-2 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all font-medium text-gray-800"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={manualName}
+                      onChange={(e) => { setManualName(e.target.value); setManualError(''); }}
+                      onBlur={() => handleGeocode(manualName)}
+                      placeholder="e.g. Indiranagar, Bangalore"
+                      className="w-full text-xs pl-3 pr-16 py-2 border border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-all font-medium text-gray-800"
+                    />
+                    <button
+                      type="button"
+                      disabled={geocoding}
+                      onClick={() => handleGeocode(manualName)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-blue-600 hover:text-blue-800 font-extrabold uppercase tracking-wider disabled:opacity-50"
+                    >
+                      {geocoding ? (
+                        <span className="flex items-center gap-1">
+                          <span className="w-2.5 h-2.5 border border-blue-600 border-t-transparent rounded-full animate-spin" />
+                          Wait
+                        </span>
+                      ) : 'Locate'}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
