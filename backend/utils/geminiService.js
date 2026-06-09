@@ -40,12 +40,17 @@ async function callGemini(prompt) {
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
       throw new Error('No content returned from Gemini');
     }
 
-    return JSON.parse(text.trim());
+    text = text.trim();
+    if (text.startsWith('```')) {
+      text = text.replace(/^```(json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    }
+
+    return JSON.parse(text);
   } catch (err) {
     console.error('[gemini] Error calling Gemini API:', err.message);
     return null;
@@ -94,7 +99,48 @@ async function getRecommendations(pastOrders, availableProducts) {
   return availableProducts.slice(0, 6).map(p => p._id.toString());
 }
 
+/**
+ * matchShoppingList - maps user items to matching product IDs in the database
+ */
+async function matchShoppingList(items, products) {
+  if (!items || items.length === 0 || !products || products.length === 0) {
+    return {};
+  }
+
+  // Simplify products to minimize token usage
+  const simplifiedProducts = products.map(p => ({
+    id: p._id.toString(),
+    name: p.name,
+    category: p.category,
+    description: p.description || ''
+  }));
+
+  const prompt = `You are a shopping list matching assistant for a local retail marketplace.
+The user has submitted this shopping list of items they want to buy: ${JSON.stringify(items)}.
+Our database has the following available products: ${JSON.stringify(simplifiedProducts)}.
+
+Your job is to match each user's item to one or more product IDs from the database catalog.
+- Handle spelling mistakes and typos (e.g. "aples" -> matches "Apples", "vitmin c" -> "Vitamin C").
+- Handle different languages/common Indian terms (e.g. "sabun" matches soap/bodywash products, "doodh" matches milk, "seb" matches apples, "aaloo" matches potato).
+- Handle synonyms (e.g. "sneakers" matches "Running Shoes", "medicine" matches "Dolo").
+- If no product in the catalog is a reasonable match for a list item, return an empty array for that item.
+
+Respond ONLY with a valid JSON object where keys are the exact items from the user's list, and values are arrays of matching product IDs. Do not include markdown code block formatting or explanations.
+Example output:
+{
+  "aples": ["653b82...", "653b89..."],
+  "sabun": ["653b91..."]
+}`;
+
+  const result = await callGemini(prompt);
+  if (result && typeof result === 'object') {
+    return result;
+  }
+  return {};
+}
+
 module.exports = {
   enhanceSearchQuery,
-  getRecommendations
+  getRecommendations,
+  matchShoppingList
 };

@@ -7,7 +7,7 @@ const User = require('../models/User');
 const { ORDER_STATUSES } = require('../config/constants');
 const { generateVerificationCode, sendSuccess, sendError } = require('../utils/response');
 const { createNotification, logAudit, logInventoryTransaction } = require('../utils/helpers');
-const { enhanceSearchQuery, getRecommendations } = require('../utils/geminiService');
+const { enhanceSearchQuery, getRecommendations, matchShoppingList } = require('../utils/geminiService');
 
 /**
  * getDistanceInKm — Pure Haversine formula (no external API required)
@@ -331,6 +331,23 @@ const buyerController = {
       }
 
       const approvedShops = await Shop.find({ approvalStatus: 'approved', isActive: true }).lean();
+      const approvedShopIds = approvedShops.map(s => s._id);
+
+      // Fetch all active products from approved shops to feed to Gemini
+      const allActiveProducts = await Product.find({
+        isActive: true,
+        stock: { $gt: 0 },
+        shopId: { $in: approvedShopIds }
+      }).lean();
+
+      // Call Gemini to match shopping list items to catalog products
+      let geminiMatches = {};
+      try {
+        geminiMatches = await matchShoppingList(items, allActiveProducts);
+      } catch (geminiErr) {
+        console.warn('[optimizeShoppingList] Gemini matching failed, falling back to regex:', geminiErr.message);
+      }
+
       const shopRecommendations = [];
 
       for (const shop of approvedShops) {
@@ -342,17 +359,33 @@ const buyerController = {
         // Search catalog of this shop for each list item
         for (const itemText of items) {
           if (!itemText.trim()) continue;
-          
-          const cleanItem = itemText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          const regex = new RegExp(cleanItem, 'i');
 
-          // Find cheapest matching in stock product in this shop
-          const match = await Product.findOne({
-            shopId: shop._id,
-            isActive: true,
-            stock: { $gt: 0 },
-            $or: [{ name: regex }, { category: regex }]
-          }).sort({ price: 1 }).lean();
+          // 1. Check if Gemini found any matching product IDs for this item
+          const geminiMatchedIds = geminiMatches[itemText] || [];
+          let match = null;
+
+          if (geminiMatchedIds.length > 0) {
+            // Find the cheapest product in this shop that matches one of the Gemini product IDs
+            match = await Product.findOne({
+              _id: { $in: geminiMatchedIds },
+              shopId: shop._id,
+              isActive: true,
+              stock: { $gt: 0 }
+            }).sort({ price: 1 }).lean();
+          }
+
+          // 2. Fallback to Regex search if Gemini didn't find a match or if Gemini failed
+          if (!match) {
+            const cleanItem = itemText.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(cleanItem, 'i');
+
+            match = await Product.findOne({
+              shopId: shop._id,
+              isActive: true,
+              stock: { $gt: 0 },
+              $or: [{ name: regex }, { category: regex }]
+            }).sort({ price: 1 }).lean();
+          }
 
           if (match) {
             matchCount++;
