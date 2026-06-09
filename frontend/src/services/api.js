@@ -151,6 +151,11 @@ export const buyerAPI = {
   reorderOrder: (orderId) => request('POST', `/buyer/orders/${orderId}/reorder`),
 };
 
+// ── Public API ────────────────────────────────────────────────────────────────
+export const publicAPI = {
+  getStats: () => request('GET', '/public/stats', null, false),
+};
+
 // ── Auth Helpers ──────────────────────────────────────────────────────────────
 export const storeAuthToken = (token) => localStorage.setItem('bopis_token', token);
 export const clearAuthToken = () => localStorage.removeItem('bopis_token');

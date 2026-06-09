@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { publicAPI } from '../services/api';
 
 /* ── Animated counter hook ── */
 function useCountUp(target, duration = 1800, start = false) {
@@ -100,7 +101,14 @@ function LandingNav() {
 }
 
 /* ── Hero Section ───────────────────────────────────────────────────────── */
-function HeroSection() {
+function HeroSection({ shopsCount }) {
+  const formatStatValue = (val, suffix = '+') => {
+    if (val >= 1000) {
+      return `${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}K${suffix}`;
+    }
+    return `${val}${suffix}`;
+  };
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden landing-bg">
       {/* Background layers */}
@@ -118,7 +126,7 @@ function HeroSection() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
             </span>
-            <span className="text-sm font-semibold text-gray-200">500+ local shops live across India</span>
+            <span className="text-sm font-semibold text-gray-200">{formatStatValue(shopsCount)} local shops live across India</span>
           </div>
 
           {/* Headline */}
@@ -233,7 +241,7 @@ function HeroSection() {
 }
 
 /* ── Stats Section ──────────────────────────────────────────────────────── */
-function StatsSection() {
+function StatsSection({ statsData }) {
   const [visible, setVisible] = useState(false);
   const ref = useRef(null);
 
@@ -243,14 +251,21 @@ function StatsSection() {
     return () => observer.disconnect();
   }, []);
 
-  const shops = useCountUp(500, 1500, visible);
-  const buyers = useCountUp(10000, 1800, visible);
-  const pickups = useCountUp(50000, 2000, visible);
+  const shops = useCountUp(statsData.shops, 1500, visible);
+  const buyers = useCountUp(statsData.buyers, 1800, visible);
+  const pickups = useCountUp(statsData.pickups, 2000, visible);
+
+  const formatStatValue = (val, suffix = '+') => {
+    if (val >= 1000) {
+      return `${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}K${suffix}`;
+    }
+    return `${val}${suffix}`;
+  };
 
   const stats = [
-    { value: visible ? `${shops}+` : '0+', label: 'Local Shops', icon: '🏪', color: 'from-blue-500/20 to-indigo-500/20 border-blue-500/20 text-blue-400' },
-    { value: visible ? `${(buyers/1000).toFixed(0)}K+` : '0+', label: 'Happy Buyers', icon: '😊', color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/20 text-emerald-400' },
-    { value: visible ? `${(pickups/1000).toFixed(0)}K+` : '0+', label: 'Pickups Done', icon: '✅', color: 'from-orange-500/20 to-amber-500/20 border-orange-500/20 text-orange-400' },
+    { value: visible ? formatStatValue(shops) : '0+', label: 'Local Shops', icon: '🏪', color: 'from-blue-500/20 to-indigo-500/20 border-blue-500/20 text-blue-400' },
+    { value: visible ? formatStatValue(buyers) : '0+', label: 'Happy Buyers', icon: '😊', color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/20 text-emerald-400' },
+    { value: visible ? formatStatValue(pickups) : '0+', label: 'Pickups Done', icon: '✅', color: 'from-orange-500/20 to-amber-500/20 border-orange-500/20 text-orange-400' },
     { value: '₹0', label: 'Delivery Fee', icon: '🎉', color: 'from-violet-500/20 to-purple-500/20 border-violet-500/20 text-violet-400' },
   ];
 
@@ -595,11 +610,31 @@ function FooterSection() {
 
 /* ── LandingPage ─────────────────────────────────────────────────────────── */
 export default function LandingPage() {
+  const [stats, setStats] = useState({ shops: 500, buyers: 10000, pickups: 50000 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await publicAPI.getStats();
+        if (res.success && res.data) {
+          setStats({
+            shops: res.data.shops || 0,
+            buyers: res.data.buyers || 0,
+            pickups: res.data.pickups || 0,
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching public stats:', err);
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
     <div className="landing-bg text-white font-sans overflow-x-hidden">
       <LandingNav />
-      <HeroSection />
-      <StatsSection />
+      <HeroSection shopsCount={stats.shops} />
+      <StatsSection statsData={stats} />
       <HowItWorksSection />
       <FeaturesSection />
       <ForShopkeepersSection />

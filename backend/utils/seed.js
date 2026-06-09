@@ -453,6 +453,169 @@ const seedDB = async () => {
 
     console.log('Seeded products successfully.');
 
+    // 4.1 Programmatic Seeding of 150 Unique Shops & Variety of Products
+    console.log('Seeding 150 additional unique shops and products...');
+
+    // A. Generate additional shopkeeper users
+    const generatedShopkeepers = [];
+    for (let i = 1; i <= 30; i++) {
+      const sk = new User({
+        name: `Shopkeeper Partner ${i}`,
+        email: `partner.shopkeeper${i}@bopis-demo.com`,
+        password: 'demo1234',
+        role: 'shopkeeper',
+        phone: `9000000${String(i).padStart(3, '0')}`,
+      });
+      await sk.save();
+      generatedShopkeepers.push(sk);
+    }
+
+    // Predefined product templates per category
+    const productTemplates = {
+      Grocery: [
+        { name: 'Fresh Avocado', desc: 'Creamy Hass avocados, perfect for salads and toast.', price: 150, sub: 'Fruits', sku: 'AVC', img: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Whole Wheat Pasta', desc: 'High-fiber organic semolina whole wheat pasta.', price: 95, sub: 'Grains', sku: 'PST', img: 'https://images.unsplash.com/photo-1563865436874-9aef32095ffd?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Oat Milk Unsweetened', desc: 'Dairy-free, creamy unsweetened oat drink.', price: 190, sub: 'Dairy Alternate', sku: 'OAT', img: 'https://images.unsplash.com/photo-1596450514735-111a2fe02935?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Organic Honey', desc: 'Pure raw unprocessed mountain honey.', price: 320, sub: 'Sweeteners', sku: 'HNY', img: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&q=80&w=400' }
+      ],
+      Pharmacy: [
+        { name: 'Multivitamin Gummies', desc: 'Daily chewable multivitamin gummies for adults.', price: 450, sub: 'Vitamins', sku: 'MVT', img: 'https://images.unsplash.com/photo-1626847037657-fd3622613ce3?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Electric Heating Pad', desc: 'Fast heating orthopedic pad for back and joint pain relief.', price: 850, sub: 'Medical Equipment', sku: 'HTP', img: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Herbal Cough Syrup', desc: 'Non-drowsy ayurvedic cough formula with honey and tulsi.', price: 110, sub: 'Cough & Cold', sku: 'CGH', img: 'https://images.unsplash.com/photo-1550572017-edd951b55104?auto=format&fit=crop&q=80&w=400' }
+      ],
+      Electronics: [
+        { name: 'Wireless Noise-Canceling Earbuds', desc: 'True wireless earbuds with active noise cancellation and 30hr battery.', price: 3499, sub: 'Audio', sku: 'ERB', img: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Multi-port USB-C Hub', desc: '6-in-1 space gray aluminum adapter with HDMI, USB 3.0, and PD.', price: 1899, sub: 'Accessories', sku: 'HUB', img: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Mechanical Gaming Keyboard', desc: 'RGB backlit mechanical keyboard with clicky blue switches.', price: 2999, sub: 'Computers', sku: 'KBD', img: 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?auto=format&fit=crop&q=80&w=400' }
+      ],
+      Books: [
+        { name: 'Atomic Habits by James Clear', desc: 'An easy & proven way to build good habits & break bad ones.', price: 450, sub: 'Self-Help', sku: 'ATH', img: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Sapiens by Yuval Noah Harari', desc: 'A brief history of humankind, exploring our development through ages.', price: 499, sub: 'History', sku: 'SAP', img: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Premium Hardcover Sketchbook', desc: 'A5 size, 160 GSM thick acid-free paper sketchbook for drawing.', price: 350, sub: 'Stationery', sku: 'SKB', img: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=400' }
+      ],
+      Clothing: [
+        { name: 'Unisex Oversized Hoodie', desc: 'Super soft fleece lined hoodie, relaxed streetwear fit.', price: 1299, sub: 'Sweaters', sku: 'HDD', img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Slim Fit Denim Jeans', desc: 'Classic stretchable blue wash denim jeans for daily wear.', price: 1799, sub: 'Pants', sku: 'JNS', img: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Polarized Wayfarer Sunglasses', desc: 'UV400 protection lightweight travel sunglasses.', price: 899, sub: 'Accessories', sku: 'SGL', img: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&q=80&w=400' }
+      ],
+      Sports: [
+        { name: 'High-Density Yoga Mat', desc: '6mm non-slip cushioning yoga mat with carrying strap.', price: 799, sub: 'Fitness', sku: 'MAT', img: 'https://images.unsplash.com/photo-1592432678016-e910b452f9a2?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Stainless Steel Gym Shaker', desc: 'Insulated leakproof bottle with wire whisk ball.', price: 650, sub: 'Accessories', sku: 'SHK', img: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Adjustable Dumbbell Set', desc: 'Pair of 5kg vinyl coated adjustable hand weights.', price: 1499, sub: 'Weightlifting', sku: 'DBL', img: 'https://images.unsplash.com/photo-1638536532686-d610adfc8e5c?auto=format&fit=crop&q=80&w=400' }
+      ],
+      Beauty: [
+        { name: 'Organic Aloe Vera Gel', desc: '99% pure cold-pressed soothing moisturizer for face and hair.', price: 220, sub: 'Skincare', sku: 'ALV', img: 'https://images.unsplash.com/photo-1560963689-a2959c894c2f?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Matte Liquid Lipstick', desc: 'Long-lasting smudge-proof matte lipstick with high pigment.', price: 450, sub: 'Makeup', sku: 'LPS', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Sunscreen SPF 50 PA+++', desc: 'Ultra-light gel sunscreen, non-greasy matte finish.', price: 395, sub: 'Skincare', sku: 'SUN', img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&q=80&w=400' }
+      ],
+      'Home & Garden': [
+        { name: 'Minimalist Ceramic Flower Pot', desc: 'Modern white round clay planter with drainage hole.', price: 420, sub: 'Garden', sku: 'POT', img: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Warm LED Table Lamp', desc: 'Dimmable wood base nightstand reading lamp.', price: 1250, sub: 'Lighting', sku: 'LMP', img: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Scented Lavender Candle', desc: 'Natural soy wax aromatherapy candle, 40hr burn time.', price: 349, sub: 'Decor', sku: 'CND', img: 'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&q=80&w=400' }
+      ],
+      Toys: [
+        { name: 'Magnetic Building Blocks', desc: '3D building tiles educational STEM set of 60pcs.', price: 1599, sub: 'Educational', sku: 'MAG', img: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Classic Board Game', desc: 'Traditional strategic multiplayer family board game.', price: 550, sub: 'Family', sku: 'BRD', img: 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Soft Plush Teddy Bear', desc: 'Super huggable brown teddy bear made with organic cotton.', price: 699, sub: 'Plush', sku: 'TED', img: 'https://images.unsplash.com/photo-1559251606-c623743a6d76?auto=format&fit=crop&q=80&w=400' }
+      ],
+      'Food & Beverages': [
+        { name: 'Artisanal Medium Roast Coffee', desc: 'Freshly roasted whole arabica beans sourced from Coorg.', price: 450, sub: 'Beverages', sku: 'COF', img: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Organic Matcha Green Tea', desc: 'Premium grade stone-ground Japanese matcha powder.', price: 890, sub: 'Beverages', sku: 'MTC', img: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&q=80&w=400' },
+        { name: 'Roasted Salted Almonds', desc: 'Crunchy premium California almonds roasted with Himalayan pink salt.', price: 299, sub: 'Snacks', sku: 'ALM', img: 'https://images.unsplash.com/photo-1508061253366-f7da158b6d96?auto=format&fit=crop&q=80&w=400' }
+      ]
+    };
+
+    // Arrays of naming components for shops
+    const areas = ['Koramangala', 'Indiranagar', 'Whitefield', 'HSR Layout', 'Jayanagar', 'JP Nagar', 'Malleshwaram', 'BTM Layout', 'Sadashivanagar', 'Hebbal', 'Rajajinagar', 'Banashankari', 'Electronic City', 'Marathahalli', 'Domlur', 'Bellandur', 'Ulsoor', 'Basavanagudi'];
+    const prefixes = ['Royal', 'Green', 'Elite', 'Super', 'Choice', 'Metro', 'Smart', 'Central', 'Mega', 'Daily', 'Pure', 'Quick', 'Local', 'Value', 'Star', 'First', 'Prime', 'Nature'];
+    const suffixes = ['Mart', 'Store', 'Hub', 'Plaza', 'Corner', 'Point', 'World', 'Haven', 'Zone', 'Bazaar', 'Shop', 'Market', 'Emporium', 'Station'];
+
+    const categoriesList = ['Grocery', 'Pharmacy', 'Electronics', 'Books', 'Clothing', 'Sports', 'Beauty', 'Home & Garden', 'Toys', 'Food & Beverages'];
+
+    const newShops = [];
+    const newProducts = [];
+
+    for (let i = 1; i <= 150; i++) {
+      const area = areas[i % areas.length];
+      const prefix = prefixes[(i * 3) % prefixes.length];
+      const suffix = suffixes[(i * 7) % suffixes.length];
+      const category = categoriesList[i % categoriesList.length];
+      const name = `${area} ${prefix} ${category} ${suffix}`;
+
+      // Distribute coordinates in a radius around Bangalore center (77.6, 12.95)
+      const latOffset = (Math.sin(i) * 0.08) + (Math.cos(i * 2) * 0.01);
+      const lngOffset = (Math.cos(i) * 0.08) + (Math.sin(i * 2) * 0.01);
+      const latitude = 12.95 + latOffset;
+      const longitude = 77.6 + lngOffset;
+
+      const owner = generatedShopkeepers[i % generatedShopkeepers.length];
+
+      const shop = new Shop({
+        name,
+        description: `Your local source for premium, high-quality ${category.toLowerCase()} products. Quick pickup available.`,
+        category,
+        address: {
+          street: `${Math.floor((i * 17) % 150) + 1} Main Road, Block ${Math.floor((i * 5) % 5) + 1}`,
+          city: `${area}, Bangalore`,
+          state: 'Karnataka',
+          zipCode: `5600${String(Math.floor((i * 13) % 90) + 10).padStart(2, '0')}`,
+          country: 'India',
+        },
+        location: {
+          type: 'Point',
+          coordinates: [longitude, latitude],
+        },
+        ownerId: owner._id,
+        approvalStatus: 'approved',
+        phone: `9${String(i).padStart(3, '0')}000${String(150 - i).padStart(3, '0')}`,
+        email: `${prefix.toLowerCase()}.${suffix.toLowerCase()}${i}@bopis-demo.com`,
+        openingHours: '9:00 AM - 9:30 PM',
+        deliverySettings: {
+          isEnabled: Math.random() > 0.3,
+          radius: Math.floor(Math.random() * 5) + 3,
+          charge: Math.floor(Math.random() * 30) + 20,
+          minOrder: Math.floor(Math.random() * 100) + 50,
+        },
+        rating: parseFloat((4.0 + (Math.sin(i) * 0.5) + (Math.random() * 0.5)).toFixed(1)),
+        reviewCount: Math.floor((i * 11) % 40) + 5,
+      });
+
+      newShops.push(shop);
+
+      // Create products for this shop
+      const templates = productTemplates[category] || [];
+      const numProducts = Math.floor(Math.random() * 3) + 2; // 2, 3, or 4 products
+      
+      for (let j = 0; j < numProducts; j++) {
+        const template = templates[j % templates.length];
+        const priceModifier = Math.floor((i * 7 + j * 13) % 15) - 7;
+        const finalPrice = Math.max(template.price + priceModifier, 10);
+        const finalStock = Math.floor((i * 23 + j * 31) % 120) + 20;
+
+        const product = new Product({
+          name: `${prefix} ${template.name}`,
+          description: `${template.desc} Handpicked and supplied by ${name}.`,
+          price: finalPrice,
+          stock: finalStock,
+          category: template.category || category,
+          subCategory: template.sub,
+          sku: `${template.sku}-${prefix.substring(0,3).toUpperCase()}-${i}`,
+          imageUrl: template.img,
+          shopId: shop._id,
+          variants: [
+            { name: 'Standard Pack', price: finalPrice, stock: finalStock, sku: `${template.sku}-${prefix.substring(0,3).toUpperCase()}-${i}-STD` }
+          ],
+          isActive: true,
+        });
+
+        newProducts.push(product);
+      }
+    }
+
+    const seededShops = await Shop.insertMany(newShops);
+    const seededProducts = await Product.insertMany(newProducts);
+    console.log(`Seeded an additional ${seededShops.length} approved shops and ${seededProducts.length} products successfully programmatically!`);
+
     // 5. Create Orders (Spanning 14 days to populate analytics)
     console.log('Seeding orders...');
 
