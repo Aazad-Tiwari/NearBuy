@@ -525,8 +525,20 @@ const seedDB = async () => {
       ]
     };
 
-    // Arrays of naming components for shops
-    const areas = ['Koramangala', 'Indiranagar', 'Whitefield', 'HSR Layout', 'Jayanagar', 'JP Nagar', 'Malleshwaram', 'BTM Layout', 'Sadashivanagar', 'Hebbal', 'Rajajinagar', 'Banashankari', 'Electronic City', 'Marathahalli', 'Domlur', 'Bellandur', 'Ulsoor', 'Basavanagudi'];
+    // Cities information across different states in India
+    const citiesInfo = [
+      { city: 'Mumbai', state: 'Maharashtra', lat: 19.0760, lng: 72.8777, zip: '4000', areas: ['Bandra', 'Andheri', 'Colaba', 'Juhu', 'Worli', 'Dadar', 'Powai', 'Kurla', 'Chembur', 'Malad'] },
+      { city: 'Delhi', state: 'Delhi', lat: 28.6139, lng: 77.2090, zip: '1100', areas: ['Connaught Place', 'Karol Bagh', 'Saket', 'Dwarka', 'Vasant Kunj', 'Lajpat Nagar', 'Rajouri Garden', 'Rohini', 'GK-2', 'Chandni Chowk'] },
+      { city: 'Bengaluru', state: 'Karnataka', lat: 12.9716, lng: 77.5946, zip: '5600', areas: ['Koramangala', 'Indiranagar', 'Whitefield', 'HSR Layout', 'Jayanagar', 'JP Nagar', 'Malleshwaram', 'Hebbal'] },
+      { city: 'Kolkata', state: 'West Bengal', lat: 22.5726, lng: 88.3639, zip: '7000', areas: ['Salt Lake', 'Park Street', 'New Town', 'Gariahat', 'Ballygunge', 'Behala', 'Howrah', 'Dum Dum'] },
+      { city: 'Chennai', state: 'Tamil Nadu', lat: 13.0827, lng: 80.2707, zip: '6000', areas: ['Adyar', 'T. Nagar', 'Mylapore', 'Velachery', 'Nungambakkam', 'Anna Nagar', 'Guindy', 'OMR'] },
+      { city: 'Hyderabad', state: 'Telangana', lat: 17.3850, lng: 78.4867, zip: '5000', areas: ['Gachibowli', 'Madhapur', 'Banjara Hills', 'Jubilee Hills', 'Secunderabad', 'Kukatpally', 'Begumpet', 'Hitech City'] },
+      { city: 'Pune', state: 'Maharashtra', lat: 18.5204, lng: 73.8567, zip: '4110', areas: ['Koregaon Park', 'Kothrud', 'Viman Nagar', 'Hinjawadi', 'Aundh', 'Baner', 'Kalyani Nagar', 'Hadapsar'] },
+      { city: 'Ahmedabad', state: 'Gujarat', lat: 23.0225, lng: 72.5714, zip: '3800', areas: ['Satellite', 'Vastrapur', 'C.G. Road', 'Bodakdev', 'Ashram Road', 'Paldi', 'Navrangpura', 'Naranpura'] },
+      { city: 'Jaipur', state: 'Rajasthan', lat: 26.9124, lng: 75.7873, zip: '3020', areas: ['Vaishali Nagar', 'Malviya Nagar', 'C-Scheme', 'Raja Park', 'Mansarovar', 'Tonk Road', 'Bani Park', 'Sodala'] },
+      { city: 'Lucknow', state: 'Uttar Pradesh', lat: 26.8467, lng: 80.9462, zip: '2260', areas: ['Hazratganj', 'Gomti Nagar', 'Aliganj', 'Indira Nagar', 'Aminabad', 'Mahanagar', 'Ashiyana', 'Jankipuram'] }
+    ];
+
     const prefixes = ['Royal', 'Green', 'Elite', 'Super', 'Choice', 'Metro', 'Smart', 'Central', 'Mega', 'Daily', 'Pure', 'Quick', 'Local', 'Value', 'Star', 'First', 'Prime', 'Nature'];
     const suffixes = ['Mart', 'Store', 'Hub', 'Plaza', 'Corner', 'Point', 'World', 'Haven', 'Zone', 'Bazaar', 'Shop', 'Market', 'Emporium', 'Station'];
 
@@ -536,17 +548,18 @@ const seedDB = async () => {
     const newProducts = [];
 
     for (let i = 1; i <= 150; i++) {
-      const area = areas[i % areas.length];
+      const cityData = citiesInfo[i % citiesInfo.length];
+      const area = cityData.areas[(i * 3) % cityData.areas.length];
       const prefix = prefixes[(i * 3) % prefixes.length];
       const suffix = suffixes[(i * 7) % suffixes.length];
       const category = categoriesList[i % categoriesList.length];
       const name = `${area} ${prefix} ${category} ${suffix}`;
 
-      // Distribute coordinates in a radius around Bangalore center (77.6, 12.95)
-      const latOffset = (Math.sin(i) * 0.08) + (Math.cos(i * 2) * 0.01);
-      const lngOffset = (Math.cos(i) * 0.08) + (Math.sin(i * 2) * 0.01);
-      const latitude = 12.95 + latOffset;
-      const longitude = 77.6 + lngOffset;
+      // Distribute coordinates in a radius around the selected city
+      const latOffset = (Math.sin(i) * 0.03) + (Math.cos(i * 2) * 0.005);
+      const lngOffset = (Math.cos(i) * 0.03) + (Math.sin(i * 2) * 0.005);
+      const latitude = cityData.lat + latOffset;
+      const longitude = cityData.lng + lngOffset;
 
       const owner = generatedShopkeepers[i % generatedShopkeepers.length];
 
@@ -556,9 +569,9 @@ const seedDB = async () => {
         category,
         address: {
           street: `${Math.floor((i * 17) % 150) + 1} Main Road, Block ${Math.floor((i * 5) % 5) + 1}`,
-          city: `${area}, Bangalore`,
-          state: 'Karnataka',
-          zipCode: `5600${String(Math.floor((i * 13) % 90) + 10).padStart(2, '0')}`,
+          city: `${area}, ${cityData.city}`,
+          state: cityData.state,
+          zipCode: `${cityData.zip}${String(Math.floor((i * 13) % 90) + 10).padStart(2, '0')}`,
           country: 'India',
         },
         location: {
@@ -616,225 +629,138 @@ const seedDB = async () => {
     const seededProducts = await Product.insertMany(newProducts);
     console.log(`Seeded an additional ${seededShops.length} approved shops and ${seededProducts.length} products successfully programmatically!`);
 
-    // 5. Create Orders (Spanning 14 days to populate analytics)
-    console.log('Seeding orders...');
+    // 5. Generate Historic Orders & Buyer Users
+    console.log('Seeding additional customer accounts...');
+    const generatedBuyers = [buyer1, buyer2, fraudBuyer];
+    for (let i = 1; i <= 15; i++) {
+      const b = new User({
+        name: `Customer ${i}`,
+        email: `customer${i}@bopis-demo.com`,
+        password: 'demo1234',
+        role: 'buyer',
+        phone: `8000000${String(i).padStart(3, '0')}`,
+      });
+      await b.save();
+      generatedBuyers.push(b);
+    }
 
-    const ordersData = [
-      // 1. Completed Pickup Order (12 Days Ago)
-      {
-        buyerId: buyer1._id,
-        shopId: shop1._id,
-        items: [{ productId: p1._id, productName: p1.name, variantName: '1 kg Strip', quantity: 2, priceAtOrder: p1.price }],
-        totalAmount: 120,
-        status: 'completed',
-        orderType: 'pickup',
-        verificationCode: '1111',
-        paymentMethod: 'online',
-        paymentStatus: 'paid',
-        pickupTime: daysAgo(12),
-        createdAt: daysAgo(12),
-      },
-      // 2. Completed Delivery Order (10 Days Ago)
-      {
-        buyerId: buyer2._id,
-        shopId: shop2._id,
-        items: [{ productId: p7._id, productName: p7.name, variantName: '30 Tablets Box', quantity: 1, priceAtOrder: p7.price }],
-        totalAmount: 230, // 180 + 50 delivery
-        status: 'completed',
-        orderType: 'delivery',
-        deliveryAddress: { street: 'Prestige Shantiniketan', city: 'Whitefield, Bangalore', state: 'Karnataka', zipCode: '560066' },
-        deliveryCharge: 50,
-        verificationCode: '2222',
-        paymentMethod: 'cod',
-        paymentStatus: 'paid',
-        pickupTime: daysAgo(10),
-        createdAt: daysAgo(10),
-      },
-      // 3. Completed Pickup Order (8 Days Ago)
-      {
-        buyerId: buyer1._id,
-        shopId: shop1._id,
-        items: [{ productId: p2._id, productName: p2.name, variantName: '1 kg Bag', quantity: 2, priceAtOrder: p2.price }],
-        totalAmount: 260,
-        status: 'completed',
-        orderType: 'pickup',
-        verificationCode: '3333',
-        paymentMethod: 'online',
-        paymentStatus: 'paid',
-        pickupTime: daysAgo(8),
-        createdAt: daysAgo(8),
-      },
-      // 4. Confirmed Order (6 Days Ago)
-      {
-        buyerId: buyer2._id,
-        shopId: shop1._id,
-        items: [{ productId: p3._id, productName: p3.name, variantName: '1 Litre Bottle', quantity: 1, priceAtOrder: p3.price }],
-        totalAmount: 65,
-        status: 'confirmed',
-        orderType: 'pickup',
-        verificationCode: '4444',
-        paymentMethod: 'online',
-        paymentStatus: 'paid',
-        pickupTime: daysAgo(6),
-        createdAt: daysAgo(6),
-      },
-      // 5. Packed Order (4 Days Ago)
-      {
-        buyerId: buyer1._id,
-        shopId: shop1._id,
-        items: [{ productId: p4._id, productName: p4.name, variantName: '1 kg Pack', quantity: 1, priceAtOrder: p4.price }],
-        totalAmount: 180,
-        status: 'packed',
-        orderType: 'pickup',
-        verificationCode: '5555',
-        paymentMethod: 'online',
-        paymentStatus: 'paid',
-        pickupTime: daysAgo(4),
-        createdAt: daysAgo(4),
-      },
-      // 6. Ready Order (2 Days Ago)
-      {
-        buyerId: buyer1._id,
-        shopId: shop1._id,
-        items: [{ productId: p6._id, productName: p6.name, variantName: 'Standard Loaf', quantity: 2, priceAtOrder: p6.price }],
-        totalAmount: 90,
-        status: 'ready',
-        orderType: 'pickup',
-        verificationCode: '6666',
-        paymentMethod: 'online',
-        paymentStatus: 'paid',
-        pickupTime: daysAgo(2),
-        createdAt: daysAgo(2),
-      },
-      // 7. Out For Delivery Order (1 Day Ago)
-      {
-        buyerId: buyer2._id,
-        shopId: shop2._id,
-        items: [{ productId: p9._id, productName: p9.name, variantName: '100 ml Pump Bottle', quantity: 2, priceAtOrder: p9.price }],
-        totalAmount: 200, // 150 + 50 delivery
-        status: 'out_for_delivery',
-        orderType: 'delivery',
-        deliveryAddress: { street: 'Brookefield Main Rd', city: 'Whitefield, Bangalore', state: 'Karnataka', zipCode: '560037' },
-        deliveryCharge: 50,
-        verificationCode: '7777',
-        paymentMethod: 'online',
-        paymentStatus: 'paid',
-        pickupTime: daysAgo(1),
-        createdAt: daysAgo(1),
-      },
-      // 8. Pending Order (12 Hours Ago)
-      {
-        buyerId: buyer1._id,
-        shopId: shop1._id,
-        items: [{ productId: p5._id, productName: p5.name, variantName: 'Dozen Box', quantity: 1, priceAtOrder: p5.price }],
-        totalAmount: 90,
-        status: 'pending',
-        orderType: 'pickup',
-        verificationCode: '8888',
-        paymentMethod: 'cod',
-        paymentStatus: 'pending',
-        pickupTime: hoursAgo(6),
-        createdAt: hoursAgo(12),
-      },
-      // 9. Cancelled Order (7 Days Ago)
-      {
-        buyerId: buyer2._id,
-        shopId: shop2._id,
-        items: [{ productId: p8._id, productName: p8.name, variantName: 'Strip of 15', quantity: 3, priceAtOrder: p8.price }],
-        totalAmount: 146, // 96 + 50 delivery
-        status: 'cancelled',
-        orderType: 'delivery',
-        deliveryAddress: { street: 'ITPL Main Road', city: 'Whitefield, Bangalore', state: 'Karnataka', zipCode: '560066' },
-        deliveryCharge: 50,
-        verificationCode: '9999',
-        paymentMethod: 'online',
-        paymentStatus: 'refunded',
-        pickupTime: daysAgo(7),
-        createdAt: daysAgo(7),
-      },
-      // 10. Cancelled Order (5 Days Ago)
-      {
-        buyerId: buyer2._id,
-        shopId: shop1._id,
-        items: [{ productId: p1._id, productName: p1.name, variantName: '1 kg Strip', quantity: 1, priceAtOrder: p1.price }],
-        totalAmount: 60,
-        status: 'cancelled',
-        orderType: 'pickup',
-        verificationCode: '0000',
-        paymentMethod: 'online',
-        paymentStatus: 'failed',
-        pickupTime: daysAgo(5),
-        createdAt: daysAgo(5),
-      },
+    console.log('Grouping all products by shop...');
+    const allProducts = await Product.find({ isActive: true }).lean();
+    const shopProductsMap = {};
+    for (const prod of allProducts) {
+      const sId = prod.shopId.toString();
+      if (!shopProductsMap[sId]) {
+        shopProductsMap[sId] = [];
+      }
+      shopProductsMap[sId].push(prod);
+    }
 
-      // --- FRAUD BUYER SET ---
-      // 11. Fraud Buyer Cancelled Order 1
-      {
-        buyerId: fraudBuyer._id,
-        shopId: shop1._id,
-        items: [{ productId: p1._id, productName: p1.name, variantName: '1 kg Strip', quantity: 2, priceAtOrder: p1.price }],
-        totalAmount: 120,
-        status: 'cancelled',
-        orderType: 'pickup',
-        verificationCode: '1212',
-        paymentMethod: 'cod',
-        paymentStatus: 'pending',
-        pickupTime: daysAgo(4),
-        createdAt: daysAgo(4),
-      },
-      // 12. Fraud Buyer Cancelled Order 2
-      {
-        buyerId: fraudBuyer._id,
-        shopId: shop1._id,
-        items: [{ productId: p2._id, productName: p2.name, variantName: '1 kg Bag', quantity: 1, priceAtOrder: p2.price }],
-        totalAmount: 130,
-        status: 'cancelled',
-        orderType: 'pickup',
-        verificationCode: '1313',
-        paymentMethod: 'cod',
-        paymentStatus: 'pending',
-        pickupTime: daysAgo(3),
-        createdAt: daysAgo(3),
-      },
-      // 13. Fraud Buyer Cancelled Order 3
-      {
-        buyerId: fraudBuyer._id,
-        shopId: shop1._id,
-        items: [{ productId: p3._id, productName: p3.name, variantName: '500 ml Pouch', quantity: 4, priceAtOrder: p3.price }],
-        totalAmount: 140,
-        status: 'cancelled',
-        orderType: 'pickup',
-        verificationCode: '1414',
-        paymentMethod: 'cod',
-        paymentStatus: 'pending',
-        pickupTime: daysAgo(2),
-        createdAt: daysAgo(2),
-      },
-      // 14. Fraud Buyer Pending Order 4
-      {
-        buyerId: fraudBuyer._id,
-        shopId: shop1._id,
-        items: [{ productId: p6._id, productName: p6.name, variantName: 'Standard Loaf', quantity: 1, priceAtOrder: p6.price }],
-        totalAmount: 45,
-        status: 'pending',
-        orderType: 'pickup',
-        verificationCode: '1515',
-        paymentMethod: 'cod',
-        paymentStatus: 'pending',
-        pickupTime: hoursAgo(1),
-        createdAt: hoursAgo(2),
-      },
-    ];
+    const approvedShopsList = await Shop.find({ approvalStatus: 'approved' });
+
+    console.log('Generating historic order records...');
+    const ordersData = [];
+    const recentStatuses = ['pending', 'confirmed', 'packed', 'ready', 'out_for_delivery', 'completed', 'cancelled'];
+
+    for (let day = 30; day >= 0; day--) {
+      // 15 to 25 orders per day
+      const dailyOrderCount = Math.floor(Math.random() * 11) + 15;
+      
+      for (let o = 0; o < dailyOrderCount; o++) {
+        const shop = approvedShopsList[Math.floor(Math.random() * approvedShopsList.length)];
+        const prods = shopProductsMap[shop._id.toString()] || [];
+        if (prods.length === 0) continue;
+
+        const buyer = generatedBuyers[Math.floor(Math.random() * generatedBuyers.length)];
+        
+        // Pick 1 to 3 items
+        const numItems = Math.floor(Math.random() * 3) + 1;
+        const selectedProducts = [];
+        const seenProdIds = new Set();
+        
+        for (let k = 0; k < numItems; k++) {
+          const p = prods[Math.floor(Math.random() * prods.length)];
+          if (seenProdIds.has(p._id.toString())) continue;
+          seenProdIds.add(p._id.toString());
+          selectedProducts.push(p);
+        }
+        
+        if (selectedProducts.length === 0) continue;
+
+        const items = selectedProducts.map(p => ({
+          productId: p._id,
+          productName: p.name,
+          variantName: p.variants?.[0]?.name || 'Standard Pack',
+          quantity: Math.floor(Math.random() * 3) + 1,
+          priceAtOrder: p.price
+        }));
+
+        let totalAmount = items.reduce((sum, item) => sum + (item.quantity * item.priceAtOrder), 0);
+
+        const orderType = Math.random() > 0.4 && shop.deliverySettings?.isEnabled ? 'delivery' : 'pickup';
+        let deliveryCharge = 0;
+        if (orderType === 'delivery') {
+          deliveryCharge = shop.deliverySettings?.charge || 25;
+          totalAmount += deliveryCharge;
+        }
+
+        // Determine status based on age
+        let status = 'completed';
+        if (day <= 2) {
+          status = recentStatuses[Math.floor(Math.random() * recentStatuses.length)];
+        } else {
+          status = Math.random() > 0.12 ? 'completed' : 'cancelled';
+        }
+
+        const orderDate = new Date();
+        orderDate.setDate(orderDate.getDate() - day);
+        orderDate.setHours(Math.floor(Math.random() * 14) + 8); // business hours 8am to 10pm
+        orderDate.setMinutes(Math.floor(Math.random() * 60));
+        orderDate.setSeconds(Math.floor(Math.random() * 60));
+
+        let paymentStatus = 'pending';
+        if (status === 'completed') {
+          paymentStatus = 'paid';
+        } else if (status === 'cancelled') {
+          paymentStatus = Math.random() > 0.5 ? 'refunded' : 'failed';
+        } else {
+          paymentStatus = Math.random() > 0.5 ? 'paid' : 'pending';
+        }
+
+        ordersData.push({
+          buyerId: buyer._id,
+          shopId: shop._id,
+          items,
+          totalAmount,
+          status,
+          orderType,
+          deliveryCharge,
+          deliveryAddress: orderType === 'delivery' ? {
+            street: `${Math.floor(Math.random() * 100) + 1} Main Road`,
+            city: shop.address.city,
+            state: shop.address.state,
+            zipCode: shop.address.zipCode
+          } : undefined,
+          verificationCode: String(Math.floor(Math.random() * 9000) + 1000),
+          paymentMethod: Math.random() > 0.5 ? 'online' : 'cod',
+          paymentStatus,
+          pickupTime: new Date(orderDate.getTime() + 2 * 3600000),
+          createdAt: orderDate,
+          updatedAt: orderDate
+        });
+      }
+    }
 
     const seededOrders = await Order.insertMany(ordersData);
-    console.log(`Seeded ${seededOrders.length} orders successfully.`);
+    console.log(`Seeded ${seededOrders.length} historic orders successfully.`);
 
     // 6. Create Reviews for Completed Orders
     console.log('Seeding reviews...');
+    // Find completed orders for shop1 and shop2 to associate reviews
+    const shop1CompletedOrder = seededOrders.find(o => o.shopId.toString() === shop1._id.toString() && o.status === 'completed');
+    const shop2CompletedOrder = seededOrders.find(o => o.shopId.toString() === shop2._id.toString() && o.status === 'completed');
     
-    // Review 1: Bob reviewing Shop 1 (Fresh Mart)
     const rev1 = new Review({
-      orderId: seededOrders[0]._id,
+      orderId: shop1CompletedOrder?._id || seededOrders[0]._id,
       buyerId: buyer1._id,
       shopId: shop1._id,
       rating: 5,
@@ -845,7 +771,7 @@ const seedDB = async () => {
 
     // Review 2: Charlie reviewing Shop 2 (Whitefield Health Pharmacy)
     const rev2 = new Review({
-      orderId: seededOrders[1]._id,
+      orderId: shop2CompletedOrder?._id || seededOrders[1]._id,
       buyerId: buyer2._id,
       shopId: shop2._id,
       rating: 4.8,
@@ -856,7 +782,7 @@ const seedDB = async () => {
 
     // Review 3: Bob reviewing Shop 1 (Fresh Mart) for basmati rice
     const rev3 = new Review({
-      orderId: seededOrders[2]._id,
+      orderId: shop1CompletedOrder?._id || seededOrders[2]._id,
       buyerId: buyer1._id,
       shopId: shop1._id,
       rating: 4,
@@ -891,11 +817,11 @@ const seedDB = async () => {
     console.log('Seeding inventory transactions...');
     const transactions = [
       { productId: p1._id, shopId: shop1._id, quantityChange: 122, type: 'restock', details: 'Initial inventory seeding.' },
-      { productId: p1._id, shopId: shop1._id, quantityChange: -2, type: 'sale', orderId: seededOrders[0]._id, details: 'Sold 2 units of 1 kg Strip in Order.' },
+      { productId: p1._id, shopId: shop1._id, quantityChange: -2, type: 'sale', orderId: shop1CompletedOrder?._id || seededOrders[0]._id, details: 'Sold 2 units of 1 kg Strip in Order.' },
       { productId: p2._id, shopId: shop1._id, quantityChange: 92, type: 'restock', details: 'Initial stock addition.' },
-      { productId: p2._id, shopId: shop1._id, quantityChange: -2, type: 'sale', orderId: seededOrders[2]._id, details: 'Sold 2 units of 1 kg Bag in Order.' },
+      { productId: p2._id, shopId: shop1._id, quantityChange: -2, type: 'sale', orderId: shop1CompletedOrder?._id || seededOrders[2]._id, details: 'Sold 2 units of 1 kg Bag in Order.' },
       { productId: p7._id, shopId: shop2._id, quantityChange: 151, type: 'restock', details: 'Seeded supplements.' },
-      { productId: p7._id, shopId: shop2._id, quantityChange: -1, type: 'sale', orderId: seededOrders[1]._id, details: 'Sold 1 unit of 30 Tablets Box in Order.' },
+      { productId: p7._id, shopId: shop2._id, quantityChange: -1, type: 'sale', orderId: shop2CompletedOrder?._id || seededOrders[1]._id, details: 'Sold 1 unit of 30 Tablets Box in Order.' },
     ];
     await InventoryTransaction.insertMany(transactions);
     console.log('Seeded inventory transactions successfully.');
