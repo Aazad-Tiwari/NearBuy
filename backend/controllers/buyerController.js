@@ -424,6 +424,10 @@ const buyerController = {
         return sendError(res, 400, 'shopId, items, and estimated time are required.');
       }
 
+      if (orderType === 'pickup' && paymentMethod === 'cod') {
+        return sendError(res, 400, 'Upfront online payment is required for pickup orders.');
+      }
+
       const estimatedTime = new Date(pickupTime);
       if (isNaN(estimatedTime.getTime()) || estimatedTime <= new Date()) {
         return sendError(res, 400, 'Pickup/Delivery time must be a valid future date-time.');

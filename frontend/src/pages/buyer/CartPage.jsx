@@ -155,51 +155,83 @@ export default function CartPage() {
               </span>
             </div>
 
-            <div className="card divide-y divide-gray-150 overflow-hidden">
+            <div className="card divide-y divide-gray-150 overflow-hidden bg-white shadow-sm border border-gray-200 rounded-2xl">
               {cartItems.map((item) => (
-                <div key={item.productId + item.variantName} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-150 flex items-center justify-center text-2xl shrink-0">📦</div>
-                    <div className="min-w-0">
-                      <p className="text-gray-800 font-extrabold text-sm truncate">{item.productName}</p>
-                      {item.variantName && (
-                        <p className="text-[10px] text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full inline-block mt-1 font-bold">
-                          {item.variantName}
-                        </p>
-                      )}
+                <div key={item.productId + item.variantName} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-5 transition-all hover:bg-slate-50/40">
+                  {/* Left Side: Product Image & Details */}
+                  <div className="flex gap-4 items-start md:items-center flex-1 min-w-0">
+                    {item.imageUrl ? (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.productName}
+                        className="w-20 h-20 rounded-2xl object-cover border border-slate-200/80 shadow-sm shrink-0"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center text-3xl shrink-0">
+                        📦
+                      </div>
+                    )}
+                    <div className="space-y-1 min-w-0">
+                      <h3 className="text-slate-800 font-extrabold text-base leading-snug truncate">
+                        {item.productName}
+                      </h3>
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {item.variantName && (
+                          <span className="text-[10px] text-blue-600 bg-blue-50 border border-blue-150 px-2.5 py-0.5 rounded-full font-bold">
+                            {item.variantName}
+                          </span>
+                        )}
+                        {item.stock <= 5 ? (
+                          <span className="text-[10px] text-amber-600 bg-amber-50 border border-amber-150 px-2.5 py-0.5 rounded-full font-bold">
+                            ⚠️ Only {item.stock} left
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-150 px-2.5 py-0.5 rounded-full font-bold">
+                            ✓ In Stock
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-400 font-medium">
+                        Unit Price: <span className="text-slate-650 font-bold">{formatPrice(item.price)}</span>
+                      </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-6">
-                    <div className="text-right">
-                      <p className="text-sm text-gray-400">Price</p>
-                      <p className="text-sm font-semibold text-gray-750">{formatPrice(item.price)}</p>
+                  {/* Right Side: Quantity selector, Subtotal & Actions */}
+                  <div className="flex flex-wrap items-center justify-between md:justify-end gap-6 border-t border-slate-100 pt-3 md:border-t-0 md:pt-0">
+                    {/* Quantity Picker */}
+                    <div className="flex flex-col gap-1 items-start md:items-center">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Quantity</span>
+                      <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200/50">
+                        <button
+                          onClick={() => updateQuantity(item.productId, item.variantName, item.quantity - 1)}
+                          className="w-8 h-8 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-650 hover:bg-slate-50 hover:text-slate-900 flex items-center justify-center font-black transition-all"
+                        >
+                          −
+                        </button>
+                        <span className="text-slate-800 font-bold text-sm w-8 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.productId, item.variantName, item.quantity + 1)}
+                          disabled={item.quantity >= item.stock}
+                          className="w-8 h-8 rounded-lg bg-white shadow-sm border border-slate-200 text-slate-650 hover:bg-slate-50 hover:text-slate-900 flex items-center justify-center font-black transition-all disabled:opacity-40 disabled:hover:bg-white"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => updateQuantity(item.productId, item.variantName, item.quantity - 1)}
-                        className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-250/60 text-gray-500 hover:bg-gray-100 hover:text-gray-800 flex items-center justify-center font-black"
-                      >
-                        −
-                      </button>
-                      <span className="text-gray-800 font-bold text-sm w-6 text-center">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.productId, item.variantName, item.quantity + 1)}
-                        className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-250/60 text-gray-500 hover:bg-gray-100 hover:text-gray-800 flex items-center justify-center font-black"
-                      >
-                        +
-                      </button>
+                    {/* Subtotal */}
+                    <div className="text-left md:text-right min-w-[90px]">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total</span>
+                      <p className="text-base font-black text-emerald-650 tracking-tight mt-1">
+                        {formatPrice(item.price * item.quantity)}
+                      </p>
                     </div>
 
-                    <div className="text-right min-w-[70px]">
-                      <p className="text-xs text-gray-400">Subtotal</p>
-                      <p className="text-sm font-black text-emerald-600">{formatPrice(item.price * item.quantity)}</p>
-                    </div>
-
+                    {/* Remove Action */}
                     <button
                       onClick={() => removeFromCart(item.productId, item.variantName)}
-                      className="text-gray-400 hover:text-rose-500 text-sm transition-colors"
+                      className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-rose-50 text-slate-450 hover:text-rose-600 border border-slate-200 hover:border-rose-150 flex items-center justify-center transition-all duration-200"
                       title="Remove item"
                     >
                       🗑️
@@ -274,7 +306,10 @@ export default function CartPage() {
             {/* Toggle Order Type */}
             <div className="grid grid-cols-2 gap-4">
               <button
-                onClick={() => setOrderType('pickup')}
+                onClick={() => {
+                  setOrderType('pickup');
+                  setPaymentMethod('online');
+                }}
                 className={`card p-5 border text-left transition-all relative overflow-hidden ${
                   orderType === 'pickup'
                     ? 'border-blue-500 bg-blue-50/20 text-blue-700 shadow-sm'
@@ -419,8 +454,15 @@ export default function CartPage() {
                 </button>
 
                 <button
-                  onClick={() => setPaymentMethod('cod')}
+                  onClick={() => {
+                    if (orderType === 'delivery') {
+                      setPaymentMethod('cod');
+                    }
+                  }}
+                  disabled={orderType === 'pickup'}
                   className={`flex-1 p-4 rounded-xl border text-left transition-all ${
+                    orderType === 'pickup' ? 'opacity-40 cursor-not-allowed' : ''
+                  } ${
                     paymentMethod === 'cod'
                       ? 'border-blue-500 bg-blue-50/20 text-blue-750 font-bold shadow-sm'
                       : 'border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -430,6 +472,13 @@ export default function CartPage() {
                   <p className="text-[10px] opacity-70 mt-1">Pay at the store counter or to the delivery partner on arrival.</p>
                 </button>
               </div>
+
+              {orderType === 'pickup' && (
+                <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3 font-semibold mt-3 flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span>Upfront online payment is required for Self Pickup orders to guarantee store preparation.</span>
+                </div>
+              )}
             </div>
           </div>
 

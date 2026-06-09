@@ -155,10 +155,19 @@ export function AppProvider({ children }) {
       if (res.success && res.shop) {
         setShops((prev) =>
           prev.map((s) =>
-            s._id === shopId ? { ...s, approvalStatus: status, rejectionReason } : s
+            s._id === shopId
+              ? {
+                  ...s,
+                  approvalStatus: status,
+                  rejectionReason: status === 'rejected' ? rejectionReason : s.rejectionReason,
+                  modificationFeedback: status === 'modify' ? rejectionReason : s.modificationFeedback,
+                }
+              : s
           )
         );
-        notify(status === 'approved' ? 'success' : 'error', `Shop has been ${status}.`);
+        const toastType = status === 'approved' ? 'success' : (status === 'modify' ? 'warning' : 'error');
+        const statusText = status === 'modify' ? 'sent back for modification' : status;
+        notify(toastType, `Shop has been ${statusText}.`);
         refreshAdminStats();
       }
     } catch (err) {

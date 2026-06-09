@@ -2,12 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const DEMO_CREDENTIALS = [
-  { role: 'Buyer',      email: 'buyer@demo.com',      icon: '🛍️', gradient: 'from-blue-500 to-indigo-500',   text: 'text-blue-600',   bg: 'bg-blue-50 border-blue-100 hover:border-blue-300' },
-  { role: 'Shopkeeper', email: 'shopkeeper@demo.com',  icon: '🏪', gradient: 'from-violet-500 to-purple-500', text: 'text-violet-600', bg: 'bg-violet-50 border-violet-100 hover:border-violet-300' },
-  { role: 'Admin',      email: 'admin@demo.com',       icon: '⚙️', gradient: 'from-amber-500 to-orange-500',  text: 'text-amber-600',  bg: 'bg-amber-50 border-amber-100 hover:border-amber-300' },
-];
-
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate  = useNavigate();
@@ -26,10 +20,6 @@ export default function LoginPage() {
     setLoading(false);
     if (!result.success) { setError(result.message); return; }
     navigate(`/${result.user.role}`, { replace: true });
-  };
-
-  const useDemoAccount = (demoEmail) => {
-    setEmail(demoEmail); setPassword('demo1234'); setError('');
   };
 
   return (
@@ -118,34 +108,7 @@ export default function LoginPage() {
             <p className="text-gray-500 mt-1.5 text-sm">Sign in to your NearBuy account</p>
           </div>
 
-          {/* Demo accounts */}
-          <div className="space-y-3">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">⚡ Quick Demo Login</p>
-            <div className="grid grid-cols-3 gap-2.5">
-              {DEMO_CREDENTIALS.map((d) => (
-                <button key={d.role} onClick={() => useDemoAccount(d.email)}
-                  className={`flex flex-col items-center gap-2 py-3 px-2 rounded-xl border text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-sm ${d.bg} ${d.text}`}
-                >
-                  <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${d.gradient} flex items-center justify-center text-lg shadow-sm`}>
-                    {d.icon}
-                  </div>
-                  {d.role}
-                </button>
-              ))}
-            </div>
-            {email && password === 'demo1234' && (
-              <p className="text-[11px] text-gray-400 text-center bg-gray-50 border border-gray-100 rounded-xl px-4 py-2">
-                ✅ Demo credentials filled — click <strong className="text-blue-600">Log In</strong> to continue
-              </p>
-            )}
-          </div>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-xs text-gray-400 font-medium">or use your account</span>
-            <div className="flex-1 h-px bg-gray-100" />
-          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -195,6 +158,40 @@ export default function LoginPage() {
               ) : 'Sign In →'}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-widest">or quick demo login</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          {/* Quick Demo Login Buttons */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { role: 'Buyer',      email: 'buyer1@bopis.com',      icon: '🛍️', gradient: 'from-blue-500 to-indigo-500',   text: 'text-blue-600',   bg: 'bg-blue-50 border-blue-100 hover:border-blue-300 hover:bg-blue-100/30' },
+              { role: 'Shopkeeper', email: 'shopkeeper1@bopis.com',  icon: '🏪', gradient: 'from-violet-500 to-purple-500', text: 'text-violet-600', bg: 'bg-violet-50 border-violet-100 hover:border-violet-300 hover:bg-violet-100/30' },
+              { role: 'Admin',      email: 'admin@bopis.com',       icon: '⚙️', gradient: 'from-amber-500 to-orange-500',  text: 'text-amber-600',  bg: 'bg-amber-50 border-amber-100 hover:border-amber-300 hover:bg-amber-100/30' },
+            ].map((d) => (
+              <button
+                key={d.role}
+                type="button"
+                onClick={async () => {
+                  setError(''); setLoading(true);
+                  const result = await login(d.email, 'demo1234');
+                  setLoading(false);
+                  if (!result.success) { setError(result.message); return; }
+                  navigate(`/${result.user.role}`, { replace: true });
+                }}
+                className={`flex flex-col items-center gap-2 py-3 px-2 rounded-2xl border text-[11px] font-bold transition-all hover:-translate-y-0.5 hover:shadow-md ${d.bg} ${d.text}`}
+              >
+                <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${d.gradient} flex items-center justify-center text-lg shadow-sm text-white`}>
+                  {d.icon}
+                </div>
+                {d.role}
+              </button>
+            ))}
+          </div>
 
           <p className="text-center text-sm text-gray-500">
             Don't have an account?{' '}

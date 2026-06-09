@@ -217,7 +217,8 @@ export default function InventoryPanel() {
     if (isEdit) setEditUploading(true); else setAddingUploading(true);
     try {
       const token = localStorage.getItem('bopis_token');
-      const response = await fetch('/api/uploads', {
+      const uploadUrl = (import.meta.env.VITE_API_URL || '/api') + '/uploads';
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData

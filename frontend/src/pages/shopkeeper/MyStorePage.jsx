@@ -102,6 +102,57 @@ export default function MyStorePage() {
         setGpsMessage(`📍 Detected: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
         setGpsLoading(false);
         notify('success', 'Location detected successfully!');
+
+        // Reverse geocoding to auto-fill address details
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`, {
+          headers: { 'User-Agent': 'NearBuy-App' }
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.address) {
+              const addr = data.address;
+              
+              // Street address: combine road and suburb/neighbourhood
+              const streetParts = [];
+              if (addr.road) streetParts.push(addr.road);
+              if (addr.suburb) streetParts.push(addr.suburb);
+              else if (addr.neighbourhood) streetParts.push(addr.neighbourhood);
+              const street = streetParts.join(', ') || addr.amenity || addr.shop || '';
+
+              // City: city || town || village || municipality || county
+              const city = addr.city || addr.town || addr.village || addr.municipality || addr.county || '';
+
+              // State: match against INDIA_STATES
+              let state = '';
+              if (addr.state) {
+                const matchedState = INDIA_STATES.find(
+                  (s) => s.toLowerCase() === addr.state.toLowerCase()
+                );
+                if (matchedState) {
+                  state = matchedState;
+                }
+              }
+
+              // PIN Code
+              const zipCode = addr.postcode || '';
+
+              setForm((f) => ({
+                ...f,
+                street: street || f.street,
+                city: city || f.city,
+                state: state || f.state,
+                zipCode: zipCode || f.zipCode
+              }));
+
+              setGpsMessage(
+                `📍 Detected: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}\n` +
+                `🏠 Address: ${street ? street + ', ' : ''}${city ? city + ', ' : ''}${state ? state + ' ' : ''}${zipCode ? '- ' + zipCode : ''}`
+              );
+            }
+          })
+          .catch((err) => {
+            console.warn('Reverse geocoding failed or offline:', err);
+          });
       },
       (error) => {
         let msg = 'Could not fetch your location.';

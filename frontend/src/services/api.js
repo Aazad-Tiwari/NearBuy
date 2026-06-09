@@ -2,7 +2,43 @@
 // API Service Layer — Wraps all backend endpoints
 // =============================================================================
 
-const BASE_URL = '/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+/**
+ * Helper to convert relative local image URLs to absolute URLs pointing to the backend
+ */
+export const getFullImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  if (BASE_URL.startsWith('http')) {
+    const origin = BASE_URL.replace(/\/api$/, '');
+    return `${origin}${url}`;
+  }
+  return url;
+};
+
+/**
+ * Recursively scans an object/array and resolves any 'imageUrl' properties
+ */
+const processImageUrls = (obj) => {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) {
+    return obj.map(processImageUrls);
+  }
+  const newObj = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      if (key === 'imageUrl' && typeof obj[key] === 'string') {
+        newObj[key] = getFullImageUrl(obj[key]);
+      } else {
+        newObj[key] = processImageUrls(obj[key]);
+      }
+    }
+  }
+  return newObj;
+};
 
 /**
  * Retrieves stored auth token from localStorage
@@ -32,7 +68,7 @@ const request = async (method, endpoint, body = null, requiresAuth = true) => {
     throw error;
   }
 
-  return data;
+  return processImageUrls(data);
 };
 
 // ── Auth API ──────────────────────────────────────────────────────────────────

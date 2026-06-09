@@ -35,7 +35,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, size
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-slate-950/80 modal-backdrop animate-fade-in"
+        className="absolute inset-0 bg-slate-950/60 modal-backdrop animate-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -45,22 +45,22 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, size
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative w-full ${SIZE_CLASSES[size] || SIZE_CLASSES.md} bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl animate-scale-in flex flex-col max-h-[90vh]`}
+        className={`relative w-full ${SIZE_CLASSES[size] || SIZE_CLASSES.md} bg-white border border-slate-200 rounded-2xl shadow-2xl animate-scale-in flex flex-col max-h-[90vh]`}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-slate-800">
+        <div className="flex items-start justify-between p-6 border-b border-slate-100">
           <div>
             {title && (
-              <h2 id="modal-title" className="text-lg font-bold text-slate-100">
+              <h2 id="modal-title" className="text-lg font-extrabold text-slate-800">
                 {title}
               </h2>
             )}
-            {subtitle && <p className="text-sm text-slate-400 mt-0.5">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-slate-400 mt-1 font-bold">{subtitle}</p>}
           </div>
           {!hideClose && (
             <button
               onClick={onClose}
-              className="ml-4 p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors"
+              className="ml-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-650 hover:bg-slate-50 transition-colors"
               aria-label="Close dialog"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -71,7 +71,7 @@ export default function Modal({ isOpen, onClose, title, subtitle, children, size
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-6 text-slate-700">{children}</div>
       </div>
     </div>
   );

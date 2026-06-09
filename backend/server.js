@@ -10,6 +10,7 @@ const { PORT } = require('./config/constants');
 const connectDB = require('./config/db');
 const apiRouter = require('./routes/index');
 const { notFoundHandler, globalErrorHandler } = require('./middlewares/errorHandler');
+const { startOrderScheduler } = require('./utils/orderScheduler');
 
 const app = express();
 
@@ -30,6 +31,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 connectDB();
+startOrderScheduler();
 
 app.use('/api', apiRouter);
 

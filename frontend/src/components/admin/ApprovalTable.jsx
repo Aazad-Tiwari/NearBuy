@@ -102,8 +102,8 @@ function ModifyModal({ shop, isOpen, onClose, onConfirm }) {
                 onClick={() => setFeedback(f === 'Other (specify below)' ? '' : f)}
                 className={`w-full text-left px-3 py-2.5 rounded-xl text-sm border transition-all font-semibold ${
                   feedback === f
-                    ? 'bg-amber-50 border-amber-200 text-amber-850 shadow-sm'
-                    : 'border-slate-200 text-slate-500 hover:border-slate-350 hover:text-slate-800 bg-slate-50/50'
+                    ? 'bg-amber-50 border-amber-200 text-amber-800 shadow-sm'
+                    : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-800 bg-slate-50/50'
                 }`}
               >
                 {f}
